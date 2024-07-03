@@ -1,0 +1,63 @@
+name: Main CI/CD Workflow
+on:
+  push:
+    branches:
+      - main
+      - dev
+      - uat
+      - qa
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        environment: [main, dev, uat, qa]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up environment-specific workflow
+        uses: actions/github-script@v4
+        with:
+          script: |
+            const environment = '${{ matrix.environment }}';
+            switch (environment) {
+            
+              case 'main':
+                github.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'deploy-main.yml'
+                });
+                break;
+                
+              case 'dev':
+                github.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'deploy-dev.yml'
+                  run: echo "echoing dev = repo"
+                });
+                break;
+                
+              case 'uat':
+                github.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'deploy-uat.yml'
+                });
+                break;
+                
+              case 'qa':
+                github.actions.createWorkflowDispatch({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  workflow_id: 'deploy-qa.yml'
+                });
+                
+              default:
+                throw new Error(`Unknown environment: ${environment}`);
+            }
