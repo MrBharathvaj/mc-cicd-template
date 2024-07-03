@@ -1,0 +1,23 @@
+# deploy-dev.yml
+name: Deploy to Dev
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up environment variables
+        run: |
+          echo "CLIENT_ID=${{ secrets.DEV_CLIENT_ID }}" >> $GITHUB_ENV
+          echo "API_ENDPOINT=https://dev.api.example.com" >> $GITHUB_ENV
+
+      - name: Deploy to Dev
+        run: |
+          # Add deployment steps here
+          echo "Deploying to Dev environment with CLIENT_ID=${{ env.CLIENT_ID }}"
