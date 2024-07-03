@@ -26,14 +26,6 @@ jobs:
             const environment = '${{ matrix.environment }}';
             switch (environment) {
             
-              case 'main':
-                github.actions.createWorkflowDispatch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: 'deploy-main.yml'
-                });
-                break;
-                
               case 'dev':
                 github.actions.createWorkflowDispatch({
                   owner: context.repo.owner,
@@ -41,22 +33,7 @@ jobs:
                   workflow_id: 'deploy-dev.yml'
                 });
                 break;
-                
-              case 'uat':
-                github.actions.createWorkflowDispatch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: 'deploy-uat.yml'
-                });
-                break;
-                
-              case 'qa':
-                github.actions.createWorkflowDispatch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: 'deploy-qa.yml'
-                });
-                
+
               default:
                 throw new Error(`Unknown environment: ${environment}`);
             }
