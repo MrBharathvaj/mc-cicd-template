@@ -14,10 +14,18 @@ jobs:
     strategy:
       matrix:
         environment: [main, dev, uat, qa]
-
+        
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with: 
+          distribution: 'us-east-1'
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '8'
 
       - name: Set up environment-specific workflow
         uses: actions/github-script@v4
