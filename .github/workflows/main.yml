@@ -39,7 +39,6 @@ jobs:
                   owner: context.repo.owner,
                   repo: context.repo.repo,
                   workflow_id: 'deploy-dev.yml'
-                  run: echo "echoing dev = repo"
                 });
                 break;
                 
