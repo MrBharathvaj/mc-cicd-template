@@ -1,47 +1,44 @@
-name: Main CI/CD Workflow
+name: Build and Deploy to cloud
 on:
   push:
-    branches:
-      - main
-      - dev
-      - uat
-      - qa
-
+    branches: dev
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        environment: [main, dev, uat, qa]
-        
+    runs-on: windows-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with: 
-          distribution: 'us-east-1'
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        distribution: 'us-east-1'
+      
+    - name: Set up Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: "temurin"
+        java-version: '21'
+        
+    - name: Deploy to Exchange
+      run: mvn deploy-settings settings.xml
+      
+    - name: Deploy to Cloudhub
+      run: mvn deploy -DmuleDeploy
+          -Den="$((vars.MULE_ENV}}"
+          -Dsecure_key="${{secrets.MULE_KEY}}"
+          -Denvironment="${{vars.MULE_ENVIRONMENT))"
+          -Dtarget="$((vars.MULE_TARGET))" --settings settings.xml
 
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '8'
-
-      - name: Set up environment-specific workflow
-        uses: actions/github-script@v4
-        with:
-          script: |
-            const environment = '${{ matrix.environment }}';
-            switch (environment) {
-            
-              case 'dev':
-                github.actions.createWorkflowDispatch({
-                  owner: context.repo.owner,
-                  repo: context.repo.repo,
-                  workflow_id: 'deploy-dev.yml'
-                });
-                break;
-
-              default:
-                throw new Error(`Unknown environment: ${environment}`);
-            }
+    - name: Alert user when flow success or failure
+      if: ${{ always() }}
+      uses: dawidd6/action-send-mail@v3
+      with:
+        server_address: smtp.gmail.com
+        server_port: 465
+        username: ${{secrets.MAIL_ADDRESS}}
+        password: ${{secrets.MAIL_PASSWORD}}
+        subject: ${{github.job}} job of ${{github.repository}} has ${{job.status}}
+        body: ${{github.job}} job in workflow ${{github.workflow}} of ${{github.repository}} has ${{job.status}}
+        to: mail123@gmail.com, mail456@gmail.com, mail789@gmail.com
+        from: ${{secrets.MAIL_ADDRESS}}
+          # # Optional content type (defaults to text/plain)
+          # contentType: text/plain
+        attachments: attachments.zip,git.diff,./README.md
